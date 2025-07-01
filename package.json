@@ -1,0 +1,22 @@
+{
+  "name": "pdp-js",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "bun ./scripts/generate-schema.ts"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/bun": "latest",
+    "@types/cheerio": "^1.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "cheerio": "^1.1.0",
+    "zod": "^3.25.67"
+  }
+}
