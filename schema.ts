@@ -1,5 +1,744 @@
 import { z } from "zod";
 
+export const CreateShipmentRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  id: z.string(),
+  sender: ShipmentSender,
+  recipient: ShipmentRecipient,
+  service: ShipmentService,
+  content: ShipmentContent,
+  payment: ShipmentPayment,
+  shipmentNote: z.string(),
+  ref1: z.string(),
+  ref2: z.string(),
+  consolidationRef: z.string(),
+  requireUnsuccessfulDeliveryStickerImage: z.boolean(),
+});
+
+export const CreateShipmentResponse = z.object({
+  id: z.string(),
+  parcels: z.array(CreatedShipmentParcel),
+  price: ShipmentPrice,
+  pickupDate: z.string().datetime(),
+  deliveryDeadline: z.string().datetime(),
+  error: Error,
+});
+
+export const CancelShipmentRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  shipmentId: z.string(),
+  comment: z.string(),
+});
+
+export const CancelShipmentResponse = z.object({
+  parcel: CreatedShipmentParcel,
+  error: Error,
+});
+
+export const AddParcelRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  shipmentId: z.string(),
+  parcel: ShipmentParcel,
+  codAmount: z.number(),
+  codFiscalReceiptItems: z.array(ShipmentCODFiscalReceiptItem),
+  declaredValueAmount: z.number(),
+});
+
+export const FinalizePendingShipmentRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  shipmentId: z.string(),
+});
+
+export const ShipmentInformationRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  shipmentIds: z.array(z.string()),
+});
+
+export const ShipmentInformationResponse = z.object({
+  shipments: z.array(Shipment),
+  error: Error,
+});
+
+export const SecondaryShipmentsRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  types: z.array(z.enum(["RETURN_SHIPMENT", "STORAGE_PAYMENT", "REDIRECT", "SEND_BACK", "MONEY_TRANSFER", "TRANSPORT_DAMAGED", "RETURN_VOUCHER"])),
+});
+
+export const SecondaryShipmentsResponse = z.object({
+  shipments: z.array(SecondaryShipment),
+  error: Error,
+});
+
+export const UpdateShipmentRequest = z.object({
+  ...CreateShipmentRequest.shape,
+  id: z.string(),
+});
+
+export const UpdateShipmentResponse = z.object({
+  ...CreateShipmentResponse.shape,
+});
+
+export const UpdateShipmentPropertiesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  id: z.string(),
+  properties: z.string(),
+});
+
+export const UpdateShipmentPropertiesResponse = z.object({
+  ...UpdateShipmentResponse.shape,
+});
+
+export const FindParcelsByRefRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  ref: z.string(),
+  searchInRef: z.number().int(),
+  shipmentsOnly: z.boolean(),
+  includeReturns: z.boolean(),
+  fromDateTime: z.string(),
+  toDateTime: z.string(),
+});
+
+export const FindParcelsByRefResponse = z.object({
+  barcodes: z.array(z.string()),
+  error: Error,
+});
+
+export const HandoverToCourierRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  parcels: z.array(ParcelHandover),
+});
+
+export const HandoverToCourierResponse = z.object({
+  error: Error,
+});
+
+export const HandoverToMidwayCarrierRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  parcels: z.array(MidwayCarrierParcelHandover),
+});
+
+export const HandoverToMidwayCarrierResponse = z.object({
+  error: Error,
+});
+
+export const BarcodeInformationRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  parcel: ShipmentParcelRef,
+});
+
+export const BarcodeInformationResponse = z.object({
+  labelInfo: LabelInfo,
+  primaryShipment: PrimaryShipment,
+  primaryParcelId: z.string(),
+  returnShipmentId: z.string(),
+  returnParcelId: z.string(),
+  redirectShipmentId: z.string(),
+  redirectParcelId: z.string(),
+  initialShipmentId: z.string(),
+  initialParcelId: z.string(),
+  error: Error,
+});
+
+export const PrintRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  format: z.enum(["pdf", "zpl"]),
+  paperSize: z.enum(["A4", "A6", "A4_4xA6"]),
+  parcels: z.array(z.number().int()),
+  printerName: z.string(),
+  dpi: z.enum(["dpi203", "dpi300"]),
+  additionalWaybillSenderCopy: z.enum(["NONE", "ON_SAME_PAGE", "ON_SINGLE_PAGE"]),
+});
+
+export const ExtendedPrintResponse = z.object({
+  data: z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(byte))))))))))))),
+  printLabelsInfo: z.array(LabelInfo),
+  error: Error,
+});
+
+export const LabelInfoRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  parcels: z.array(ShipmentParcelRef),
+});
+
+export const LabelInfoResponse = z.object({
+  printLabelsInfo: z.array(LabelInfo),
+  error: Error,
+});
+
+export const PrintVoucherRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  shipmentIds: z.array(z.string()),
+  printerName: z.string(),
+  format: z.enum(["pdf", "zpl"]),
+  dpi: z.enum(["dpi203", "dpi300"]),
+});
+
+export const TrackRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  parcels: z.array(TrackShipmentParcelRef),
+  lastOperationOnly: z.boolean(),
+});
+
+export const TrackResponse = z.object({
+  parcels: z.array(TrackedParcel),
+  error: Error,
+});
+
+export const BulkTrackingDataFilesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  lastProcessedFileId: z.number().int(),
+});
+
+export const BulkTrackingDataFilesResponse = z.object({
+  files: z.array(BulkTrackingDataFile),
+  error: Error,
+});
+
+export const PickupRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  pickupDateTime: z.string(),
+  autoAdjustPickupDate: z.boolean(),
+  pickupScope: z.enum(["EXPLICIT_SHIPMENT_ID_LIST", "ALL_CREATED_BY_LOGGED_USER", "ALL_CREATED_BY_SAME_CLIENT"]),
+  explicitShipmentIdList: z.array(z.string()),
+  visitEndTime: z.string(),
+  contactName: z.string(),
+  phoneNumber: ShipmentPhoneNumber,
+});
+
+export const PickupResponse = z.object({
+  orders: z.array(PickupOrder),
+  error: Error,
+});
+
+export const PickupTermsRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  serviceId: z.number().int(),
+  startingDate: z.string(),
+  sender: CalculationSender,
+  senderHasPayment: z.boolean(),
+});
+
+export const PickupTermsResponse = z.object({
+  cutoffs: z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.array(z.string().datetime()))))))))))))))))),
+  error: Error,
+});
+
+export const GetCountryRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetCountryResponse = z.object({
+  country: Country,
+  error: Error,
+});
+
+export const FindCountryRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  name: z.string(),
+  isoAlpha2: z.string(),
+  isoAlpha3: z.string(),
+});
+
+export const FindCountryResponse = z.object({
+  countries: z.array(Country),
+  error: Error,
+});
+
+export const GetAllCountriesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetStateRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetStateResponse = z.object({
+  state: State,
+  error: Error,
+});
+
+export const FindStateRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  countryId: z.number().int(),
+  name: z.string(),
+});
+
+export const FindStateResponse = z.object({
+  states: z.array(State),
+  error: Error,
+});
+
+export const GetAllStatesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetSiteRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetSiteResponse = z.object({
+  site: Site,
+  error: Error,
+});
+
+export const FindSiteRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  countryId: z.number().int(),
+  name: z.string(),
+  postCode: z.string(),
+  type: z.string(),
+  municipality: z.string(),
+  region: z.string(),
+});
+
+export const FindSiteResponse = z.object({
+  sites: z.array(Site),
+  error: Error,
+});
+
+export const GetAllSitesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetStreetRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetStreetResponse = z.object({
+  street: Street,
+  error: Error,
+});
+
+export const FindStreetRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  siteId: z.number().int(),
+  name: z.string(),
+  type: z.string(),
+});
+
+export const FindStreetResponse = z.object({
+  streets: z.array(Street),
+  error: Error,
+});
+
+export const GetAllStreetsRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetComplexRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetComplexResponse = z.object({
+  complex: Complex,
+  error: Error,
+});
+
+export const FindComplexRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  siteId: z.number().int(),
+  name: z.string(),
+  type: z.string(),
+});
+
+export const FindComplexResponse = z.object({
+  complexes: z.array(Complex),
+  error: Error,
+});
+
+export const GetAllComplexesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const FindBlockRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  siteId: z.number().int(),
+  name: z.string(),
+});
+
+export const FindBlockResponse = z.object({
+  blocks: z.array(Block),
+  error: Error,
+});
+
+export const GetAllBlockRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetPOIRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetPOIResponse = z.object({
+  poi: z.number().int(),
+  error: Error,
+});
+
+export const FindPOIRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  siteId: z.number().int(),
+  name: z.string(),
+});
+
+export const FindPOIResponse = z.object({
+  pois: z.array(z.number().int()),
+  error: Error,
+});
+
+export const GetAllPOIRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetAllPostcodesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetOfficeRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetOfficeResponse = z.object({
+  office: Office,
+  error: Error,
+});
+
+export const FindOfficeRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  countryId: z.number().int(),
+  siteId: z.number().int(),
+  siteName: z.string(),
+  name: z.string(),
+  limit: z.number().int(),
+});
+
+export const FindOfficeResponse = z.object({
+  offices: z.array(Office),
+  error: Error,
+});
+
+export const FindNearestOfficesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  address: ShipmentAddress,
+  distance: z.number().int(),
+  limit: z.number().int(),
+  officeType: z.enum(["OFFICE", "APT"]),
+  officeFeatures: z.enum(["CARD_PAYMENT", "CASH_PAYMENT", "DROP_OFF", "PICK_UP", "CARGO_TYPE_PARCEL", "CARGO_TYPE_PALLET", "CARGO_TYPE_TYRE"]),
+});
+
+export const FindNearestOfficesResponse = z.object({
+  offices: z.array(OfficeResult),
+  x: z.number(),
+  y: z.number(),
+  error: Error,
+});
+
+export const CalculationRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  sender: CalculationSender,
+  recipient: CalculationRecipient,
+  service: CalculationService,
+  content: CalculationContent,
+  payment: ShipmentPayment,
+});
+
+export const CalculationResponse = z.object({
+  calculations: z.array(z.array(CalculationResult)),
+  error: Error,
+});
+
+export const GetClientRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetClientResponse = z.object({
+  client: Client,
+  error: Error,
+});
+
+export const GetContractClientsRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetContractClientsResponse = z.object({
+  clients: z.array(Client),
+  error: Error,
+});
+
+export const CreateContactRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  externalContactId: z.string(),
+  secretKey: z.string(),
+  phone1: ShipmentPhoneNumber,
+  phone2: ShipmentPhoneNumber,
+  clientName: z.string(),
+  objectName: z.string(),
+  contactName: z.string(),
+  email: z.string(),
+  privatePerson: z.boolean(),
+  address: ShipmentAddress,
+});
+
+export const CreateContactResponse = z.object({
+  clientId: z.number().int(),
+  error: Error,
+});
+
+export const GetContactByExternalIdRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  secretKey: z.string(),
+});
+
+export const GetContactByExternalIdResponse = z.object({
+  client: Client,
+  error: Error,
+});
+
+export const GetOwnClientIdRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const GetOwnClientIdResponse = z.object({
+  clientId: z.number().int(),
+  error: Error,
+});
+
+export const ContractInfoRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+});
+
+export const ContractInfoResponse = z.object({
+  id: z.number().int(),
+  specialDeliveryRequirements: SpecialDeliveryRequirements,
+  cod: CODAdditionalServiceContractInfo,
+  administrativeFeeAllowed: z.boolean(),
+  error: Error,
+});
+
+export const ValidateAddressRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  address: ShipmentAddress,
+});
+
+export const ValidationResponse = z.object({
+  valid: z.boolean(),
+  error: Error,
+});
+
+export const ValidatePostCodeRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  countryId: z.number().int(),
+  siteId: z.number().int(),
+  postCode: z.string(),
+});
+
+export const ValidatePhoneRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  number: z.string(),
+  ext: z.string(),
+});
+
+export const ValidateShipmentRequest = z.object({
+  ...CreateShipmentRequest.shape,
+});
+
+export const ServicesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  date: z.string().datetime(),
+});
+
+export const ServicesResponse = z.object({
+  services: z.array(CourierService),
+  error: Error,
+});
+
+export const DestinationServicesRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  date: z.string().datetime(),
+  sender: CalculationSender,
+  recipient: CalculationRecipient,
+});
+
+export const DestinationServicesResponse = z.object({
+  services: z.array(ExtendedCourierService),
+  error: Error,
+});
+
+export const PayoutRequest = z.object({
+  userName: z.string(),
+  password: z.string(),
+  language: z.string(),
+  clientSystemId: z.number().int(),
+  fromDate: z.string().datetime(),
+  toDate: z.string().datetime(),
+  includeDetails: z.boolean(),
+});
+
+export const PayoutResponse = z.object({
+  payouts: z.array(Payout),
+  error: Error,
+});
 
 export const ShipmentService = z.object({
   pickupDate: z.string().datetime(),
