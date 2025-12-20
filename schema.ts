@@ -1241,5 +1241,3 @@ export type CODInternationalAnnexContractInfo = {
     /** International annex country name */
     countryName?: string;
 };
-
-

@@ -509,7 +509,7 @@ class APIDocGenerator {
 
           writer.write(`  ${propName}${opt}: `);
           fieldType(writer);
-          writer.write(";").newLine();
+          writer.write(";");
         }
         writer.write("}");
       };
@@ -528,8 +528,6 @@ class APIDocGenerator {
         name,
         type: finalType,
       });
-
-      schemaFile.addStatements([newLine]); // blank line between declarations
     }
     schemaFile.formatText({ ensureNewLineAtEndOfFile: true });
 
