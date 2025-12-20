@@ -1,8 +1,21 @@
 import * as cheerio from 'cheerio';
-import type { Element } from 'domhandler';
 import { CodeBlockWriter, Project, Scope, StructureKind } from 'ts-morph';
 import { ConsoleLogger, type Logger } from '../logger';
+import type { Element } from 'domhandler';
 
+export interface DocsProvider {
+  getDocumentation(): string | Promise<string>;
+}
+class FetchDocsProvider implements DocsProvider {
+  constructor(private readonly url: string = "https://api.speedy.bg/api/docs/") { }
+
+  async getDocumentation(): Promise<string> {
+    const res = await fetch(this.url);
+    const text = await res.text()
+
+    return text;
+  }
+}
 /**
  * Map of schema name to the schema
  * For example:
@@ -58,8 +71,6 @@ const schemaNameAlias: Record<string, string> = {
   ShipmentReturnVoucherAdditionalService: "ShipmentReturnVoucherSubService",
   GoodsItem: "ShipmentParcelGoods"
 }
-
-const newLine = '\n';
 
 function toPascalCase(str: string): string {
   return str
@@ -282,16 +293,14 @@ function isOptional(field: SchemaField): boolean {
 //
 // await indexFile.save()
 
-class APIDocGenerator {
-  private apiUrl: string;
+export class APIGenerator {
   private apiDoc: cheerio.CheerioAPI;
   private project = new Project();
 
   constructor(
-    apiUrl: string = "https://api.speedy.bg/api/docs/",
+    private readonly docsProvider: DocsProvider = new FetchDocsProvider(),
     private readonly logger: Logger = new ConsoleLogger(),
   ) {
-    this.apiUrl = apiUrl;
     this.apiDoc = cheerio.load("") // Initialize with empty content, will be set in init()
   }
 
@@ -299,9 +308,9 @@ class APIDocGenerator {
    * Generates TypeScript client code based on the API documentation.
    */
   generate() {
-    const dataStructuresSection = this.extractSection("3. Data Structures");
-    const schemaMap = this.extractSchemas(dataStructuresSection);
-    this.writeSchemaFile(schemaMap)
+    const requestResponseSchemas = this.extractRequestResponseSchemas();
+    const dataStructureSchemas = this.extractDataStructuresSchemas();
+    this.writeSchemaFile(dataStructureSchemas, requestResponseSchemas)
   }
 
   /**
@@ -386,84 +395,153 @@ class APIDocGenerator {
   }
 
   /**
-   * Every request, response and data schema in the API is defined in its own table.
-   * The first table row contains the schema name.
-   * The subsequent rows contain the fields.
+   * Extracts service schemas from Section 2 of the API documentation.
    *
-   * Extracts all schemas from the given section of the documentation.
-   * @param section - The section elements to extract schemas from. For example, section 3.
    * @return An object mapping of the schema name to the schema.
    */
-  extractSchemas(section: cheerio.Cheerio<Element>[]) {
+  extractRequestResponseSchemas() {
+    const section = this.extractSection("2. Overall Description");
     const schemaMap: SchemaMap = {};
 
+    // Find all h3 elements that contain "Request" or "Response" in their text
+    // If we can't find a table between the h3 and the next h3, the schema is the same as another schema and it's
+    // specified in the following format:
+    // The response is the same as CreateShipmentResponse.
+    // In this case, we set the schema to extend the referenced schema.
+    // Otherwise, we extract the schema from the table following the h3.
     section.forEach((el) => {
-      if (!el.is("table")) return;
+      if (!el.is("h3")) return;
+      const headerText = this.apiDoc(el).text().trim();
+      if (!headerText.includes("Request)") && !headerText.includes("Response)")) return;
 
-      const rows = el.find("tr").toArray();
-      if (rows.length < 3) return; // must have header and at least two rows
+      let tableNode: cheerio.Cheerio<Element> | undefined;
+      let sameAsNode: cheerio.Cheerio<Element> | undefined;
 
-      // Row 0: contains the schema name
-      const schemaName = this.apiDoc(rows[0]).text().trim().replaceAll(" ", "");
-      if (!schemaName) return;
-
-      // Row 1: column headers
-      const headerRow = this.apiDoc(rows[1]).find("td").toArray();
-      const colIndex = this.buildSchemaTableColumnIndex(headerRow);
-
-      // If we can't even find a "name" or "type" columns, we can't parse fields reliably.
-      if (colIndex.name == null || colIndex.type == null) return;
-
-      const fields: SchemaField[] = [];
-      let schemaExtends: string | undefined;
-
-      for (const row of rows.slice(2)) {
-        const $row = this.apiDoc(row);
-        const cols = $row.find("td").toArray();
-
-        // Special case: "extends another table" row (often a single <td> with a link)
-        // See: https://api.dpd.ro/api/docs/#href-ds-recipient
-        if (cols.length === 1) {
-          const $cell = this.apiDoc(cols[0]);
-          const cellText = $cell.text().trim().toLowerCase();
-          if (!cellText) continue;
-
-          // Heuristic: treat as "extends" if it mentions "fields are here"
-          if (cellText.includes("fields are here")) {
-            schemaExtends = $cell.text().trim().split(" ")[0]; // Get the referenced schema name
-          }
-          // Otherwise ignore single-cell non-field rows.
-          continue;
+      let cur = el.next();
+      while (cur.length && !cur.is("h3")) {
+        if (cur.is("table")) {
+          tableNode = cur;
+          break;
         }
-
-        const pick = (key: ColumnKey): string => {
-          const idx = colIndex[key];
-          if (idx == null) return "";
-          if (idx < 0 || idx >= cols.length) return "";
-          return this.apiDoc(cols[idx]).text().trim();
-        };
-
-        const name = pick("name");
-        const type = pick("type");
-        if (!name || !type) continue; // skip empty rows
-
-        const field: SchemaField = { name, type };
-
-        const required = pick("required");
-        if (required) field.required = required;
-
-        const desc = pick("description");
-        if (desc) field.description = desc;
-
-        const constraints = pick("constraints");
-        if (constraints) field.constraints = constraints;
-
-        fields.push(field);
+        // Check for "The response is the same as <a>XxxXXxxResponse.</a>"
+        if (cur.is("a")) {
+          const text = cur.text().trim().toLowerCase();
+          if (text.endsWith("response") || text.endsWith("request")) {
+            sameAsNode = cur;
+          }
+        }
+        cur = cur.next();
       }
-      schemaMap[schemaName] = { fields, extends: schemaExtends };
+
+      if (tableNode) {
+        const schema = this.extractSchemaFromTable(tableNode);
+        if (schema) {
+          Object.assign(schemaMap, schema);
+        }
+      } else if (sameAsNode) {
+        // The schema name is the word within the parentheses in the header text and strip dots and spaces
+        const schemaName = headerText.match(/\(([^)]+)\)/)?.[1]?.trim().replaceAll(" ", "");
+
+        const sameAs = sameAsNode.text().trim().replaceAll(".", "");
+        if (schemaName) {
+          schemaMap[schemaName] = {
+            fields: [],
+            extends: sameAs,
+          };
+          this.logger.info(`From same-as: ${headerText} extends ${sameAs}`);
+        }
+      }
     });
 
     return schemaMap;
+  }
+
+  /**
+   * Every data schema in Section 3 of the API is defined in its own table.
+   * The first table row contains the schema name.
+   * The subsequent rows contain the fields.
+   *
+   * Extracts all schemas from the "3. Data Structures" section of the API documentation.
+   * @return An object mapping of the schema name to the schema.
+   */
+  extractDataStructuresSchemas() {
+    const section = this.extractSection("3. Data Structures");
+    const schemaMap: SchemaMap = {};
+
+    section.forEach((el) => {
+      const schema = this.extractSchemaFromTable(el);
+      if (!schema) return;
+
+      Object.assign(schemaMap, schema);
+    });
+
+    return schemaMap;
+  }
+
+  extractSchemaFromTable(table: cheerio.Cheerio<Element>): SchemaMap | undefined {
+    if (!table.is("table")) return;
+
+    const rows = table.find("tr").toArray();
+    if (rows.length < 3) return; // must have header and at least two rows
+
+    // Row 0: contains the schema name
+    const schemaName = this.apiDoc(rows[0]).text().trim().replaceAll(" ", "");
+    if (!schemaName) return;
+
+    // Row 1: column headers
+    const headerRow = this.apiDoc(rows[1]).find("td").toArray();
+    const colIndex = this.buildSchemaTableColumnIndex(headerRow);
+
+    // If we can't even find a "name" or "type" columns, we can't parse fields reliably.
+    if (colIndex.name == null || colIndex.type == null) return;
+
+    const fields: SchemaField[] = [];
+    let schemaExtends: string | undefined;
+
+    for (const row of rows.slice(2)) {
+      const $row = this.apiDoc(row);
+      const cols = $row.find("td").toArray();
+
+      // Special case: "extends another table" row (often a single <td> with a link)
+      // See: https://api.dpd.ro/api/docs/#href-ds-recipient
+      if (cols.length === 1) {
+        const $cell = this.apiDoc(cols[0]);
+        const cellText = $cell.text().trim().toLowerCase();
+        if (!cellText) continue;
+
+        // Heuristic: treat as "extends" if it mentions "fields are here"
+        if (cellText.includes("fields are here")) {
+          schemaExtends = $cell.text().trim().split(" ")[0]; // Get the referenced schema name
+        }
+        // Otherwise ignore single-cell non-field rows.
+        continue;
+      }
+
+      const pick = (key: ColumnKey): string => {
+        const idx = colIndex[key];
+        if (idx == null) return "";
+        if (idx < 0 || idx >= cols.length) return "";
+        return this.apiDoc(cols[idx]).text().trim();
+      };
+
+      const name = pick("name");
+      const type = pick("type");
+      if (!name || !type) continue; // skip empty rows
+
+      const field: SchemaField = { name, type };
+
+      const required = pick("required");
+      if (required) field.required = required;
+
+      const desc = pick("description");
+      if (desc) field.description = desc;
+
+      const constraints = pick("constraints");
+      if (constraints) field.constraints = constraints;
+
+      fields.push(field);
+    }
+    return { [schemaName]: { fields, extends: schemaExtends } };
   }
 
   writeSchemaFile(...schemas: SchemaMap[]) {
@@ -608,8 +686,7 @@ class APIDocGenerator {
    * Initializes the API documentation by fetching and parsing the HTML content.
    */
   async init() {
-    const res = await fetch(this.apiUrl);
-    const text = await res.text()
+    const text = await this.docsProvider.getDocumentation();
     const $ = cheerio.load(text);
     this.apiDoc = $;
     return this;
@@ -631,6 +708,6 @@ class APIDocGenerator {
   }
 }
 
-new APIDocGenerator().init().then((gen) => {
+new APIGenerator().init().then((gen) => {
   gen.generate();
 });

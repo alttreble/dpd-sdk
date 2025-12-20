@@ -385,10 +385,10 @@ export type AutoSelectNearestOfficePolicy = {
     /** The action to take if nearest office is unavailable. Values can be:"DELIVERY_TO_ADDRESS" - do not change recipient location and deliver to client address			"CANCEL_WITH_ERROR" - cancel shipment and return error in response */
     unavailableNearestOfficeAction?: ("DELIVERY_TO_ADDRESS" | "CANCEL_WITH_ERROR");
     /** Office type filter. Values can be:
-                 
+
                        "OFFICE" - select nearest office
                     "APT" - select nearest locker (APT)
-                 
+
                  No office filter selection is applied if value is not specified Constraints: Not supported for every destination country */
     officeType?: ("OFFICE" | "APT");
 };
@@ -491,7 +491,7 @@ export type Error = {
     /** Error code. See Appendix 3 - Error Codes for more details. */
     code: number;
     /** The request component, if applicable, relevant to this error in JSONPath format with dot notation.
-                    
+
                     (For example $.sender.address.siteId refers to siteId property in sender address.) */
     component?: string;
 };
@@ -509,7 +509,7 @@ export type ParcelToPrintAdditionalBarcode = {
     /** Additional barcode format. */
     format?: ("CODE128" | "EAN13" | "EAN8" | "UPCA" | "UPCE");
     /** Values can be:
-                    
+
                           "PROVIDED" - The default value. Uses the values in the "value" and "label" properties.
                        "PARCEL_ID" - Prints the parceId.The "value" and "label" properties have to be empty. The "format" property is required with value "CODE128". */
     valueType?: ("PROVIDED" | "PARCEL_ID");
@@ -618,7 +618,7 @@ export type Country = {
     /** Country ISO alpha 3 code */
     isoAlpha3?: string;
     /** Allowed postcode format patterns.
-                    If empty string presents in allowed patterns this means - postcode format is not restricted and post code validation is not applied on addresses in this country.  For non-empty patterns, the following characters are placeholders for:  
+                    If empty string presents in allowed patterns this means - postcode format is not restricted and post code validation is not applied on addresses in this country.  For non-empty patterns, the following characters are placeholders for:
                        N - digit
                        A - letter
                        ? - digit or letter
@@ -638,7 +638,7 @@ export type Country = {
     /** Valid complex types for country (applicable if addressType is equal to 1) */
     complexTypes?: (AddressNomenclatureType)[];
     /** Specifies site nomenclature (sites) for this country. Values can be:
-                               
+
                                    0 - No site nomenclature for this country.
                                    1 - Full site nomenclature for this country.
                                    2 - Partial site nomenclature for this country. */
@@ -689,8 +689,8 @@ export type Site = {
     /** Default post code for this site (if any) */
     postCode?: string;
     /** Code for address nomenclature (streets, complexes, blocks, poi) support.
-                            
-                       0 - no address nomenclature 
+
+                       0 - no address nomenclature
                        1 - full address nomenclature
                        2 - partial address nomenclature */
     addressNomenclature?: number;
@@ -1078,10 +1078,10 @@ export type PrimaryShipment = {
     /** Primary shipment id */
     id?: string;
     /** Primary shipment type - how this secondary shipment is related to primary one
-                    
+
                           RETURN_SHIPMENT - if this shipment is one of return of documents (rod) / returnReceipt / swap / return of pallets (rop) for a primary one
                           STORAGE_PAYMENT - if this shipment is for warehouse charges for a primary one
-                          REDIRECT - if this shipment redirects primary one 
+                          REDIRECT - if this shipment redirects primary one
                           SEND_BACK - if this shipment returns primary one to sender
                           MONEY_TRANSFER - if this shipment is a money transfer for a primary one
                           TRANSPORT_DAMAGED - if this shipment is for damaged primary shipment transport
@@ -1240,4 +1240,1073 @@ export type CODInternationalAnnexContractInfo = {
     countryId?: number;
     /** International annex country name */
     countryName?: string;
+};
+export type CreateShipmentRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment id Constraints: Shipment ID from provided range. If shipment ID is empty the system will generate and return it in response */
+    id?: string;
+    /** Defines the sender of the shipment and shipment's pickup place. If not specified, the logged user is considered as a sender. */
+    sender?: ShipmentSender;
+    /** Defines the recipient of the shipment and shipment’s delivery place. */
+    recipient: ShipmentRecipient;
+    /** Defines shipment service level agreement. */
+    service: ShipmentService;
+    /** Defines shipment’s content - number of parcels, weight, size, etc. */
+    content: ShipmentContent;
+    /** Defines who-pays-what in shipment and other payment parameters. */
+    payment: ShipmentPayment;
+    /** Customer’s note associated with the shipment. Constraints: 200 characters */
+    shipmentNote?: string;
+    /** Reference number or text. Constraints: 30 */
+    ref1?: string;
+    /** Reference number or text. Constraints: 30 */
+    ref2?: string;
+    /** Consolidation reference number or text. Constraints: 30 */
+    consolidationRef?: string;
+    /** Require unsuccessful delivery sticker image flag. */
+    requireUnsuccessfulDeliveryStickerImage?: boolean;
+};
+export type CreateShipmentResponse = {
+    /** Generated shipment id. */
+    id?: string;
+    /** Generated parcels. */
+    parcels?: (CreatedShipmentParcel)[];
+    /** Returned, if customer has access to view the amounts of the shipment. */
+    price?: ShipmentPrice;
+    /** Shipment pickup date. */
+    pickupDate?: string;
+    /** Deadline for delivery. Returned, if available. */
+    deliveryDeadline?: string;
+    /** Response error. */
+    error?: Error;
+};
+export type CancelShipmentRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment id Constraints: Should have access rights to cancel the shipment. */
+    shipmentId: string;
+    /** Cancel comment Constraints: Max 1024 */
+    comment: string;
+};
+export type CancelShipmentResponse = {
+    /** Created shipment parcel (with generated id and sequence number) */
+    parcel?: CreatedShipmentParcel;
+    /** Response error */
+    error?: Error;
+};
+export type AddParcelRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment id Constraints: Should refer shipment in pending parcels state (not finalized yet with finalizePendingShipment method). */
+    shipmentId: string;
+    /** Parcel to add. Parcel id and sequence number are auto-generated and therefore ignored if present in request */
+    parcel: ShipmentParcel;
+    /** COD amount to add with this parcel to increase total COD amount */
+    codAmount?: number;
+    /** List of items to add in current fiscal receipt items list to issue receipt on behalf of client	If shipment has fiscal receipt items, the COD amount is the total amount with VAT of all fiscal receipt items. */
+    codFiscalReceiptItems?: (ShipmentCODFiscalReceiptItem)[];
+    /** Declared value (extended liability) amount to add with this parcel to increase total amount Constraints: If this parcel increases the amount of declared value, the shipment should be opened with Declared value (extended liability) additional service */
+    declaredValueAmount?: number;
+};
+export type FinalizePendingShipmentRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment id Constraints: Should refer shipment in pending parcels state (not finalized yet with finalizePendingShipment method). */
+    shipmentId: string;
+};
+export type ShipmentInformationRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment ids */
+    shipmentIds: (string)[];
+};
+export type ShipmentInformationResponse = {
+    /** Shipment information */
+    shipments?: (Shipment)[];
+    /** Response error */
+    error?: Error;
+};
+export type SecondaryShipmentsRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Filters the list for shipments of the specified type(s) only.  No filter is applied if not provided (all secondary shipments are returned).  RETURN_SHIPMENT - any of return of documents (rod) / returnReceipt / swap / return of pallets (rop) STORAGE_PAYMENT - warehouse charges REDIRECT - redirect shipment SEND_BACK - return to sender MONEY_TRANSFER - money transfer TRANSPORT_DAMAGED - damaged shipment transport VOUCHER_RETURN - return with voucher */
+    types: ("RETURN_SHIPMENT" | "STORAGE_PAYMENT" | "REDIRECT" | "SEND_BACK" | "MONEY_TRANSFER" | "TRANSPORT_DAMAGED" | "RETURN_VOUCHER")[];
+};
+export type SecondaryShipmentsResponse = {
+    /** List of secondary shipments */
+    shipments?: (SecondaryShipment)[];
+    /** Response error */
+    error?: Error;
+};
+export type UpdateShipmentRequest = CreateShipmentRequest & {
+    /** Shipment id Constraints: Shipment with that id must exisists, should be accessible to method caller and shipment state must allow requested property update */
+    id: string;
+};
+export type UpdateShipmentResponse = CreateShipmentResponse & {
+};
+export type UpdateShipmentPropertiesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment id Constraints: Shipment with that id must exisists, should be accessible to method caller and shipment state must allow requested property update */
+    id: string;
+    /** The map key is shipment property name and the map value is new propery value to be set in shipment. Constraints: The allowed key (property) names are the same as url parameter names (synonims) defined in CreateShipmentRequest
+                    The values expected to be in the format defined for corresponding url parameter in that method sepcification. */
+    properties: string;
+};
+export type UpdateShipmentPropertiesResponse = UpdateShipmentResponse & {
+};
+export type FindParcelsByRefRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Client reference */
+    ref: string;
+    /** Specifies where to search: 0 means [Ref1 or Ref2], 1 means [Ref1], 2 means [Ref2] */
+    searchInRef: number;
+    /** If true - search in shipments only, otherwise in shipment and parcels. Default is true */
+    shipmentsOnly?: boolean;
+    /** If true - search in return shipments also. Default is false */
+    includeReturns?: boolean;
+    /** Pick-up date - from. Up to 6 months before */
+    fromDateTime?: string;
+    /** Pick-up date - to */
+    toDateTime?: string;
+};
+export type FindParcelsByRefResponse = {
+    /** List of barcodes found */
+    barcodes?: (string)[];
+    /** Response error */
+    error?: Error;
+};
+export type HandoverToCourierRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Parcel barcodes with datetime to register handover to courier operations Constraints: Should refer accessible shipment parcels */
+    parcels: (ParcelHandover)[];
+};
+export type HandoverToCourierResponse = {
+    /** Response error */
+    error?: Error;
+};
+export type HandoverToMidwayCarrierRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Parcel barcodes with datetime, country and site name to register handover to midway carrier operations Constraints: Should refer accessible shipment parcels */
+    parcels: (MidwayCarrierParcelHandover)[];
+};
+export type HandoverToMidwayCarrierResponse = {
+    /** Response error */
+    error?: Error;
+};
+export type BarcodeInformationRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Parcel to get info for Constraints: Validated for allowed access. */
+    parcel: ShipmentParcelRef;
+};
+export type BarcodeInformationResponse = {
+    /** Label info */
+    labelInfo?: LabelInfo;
+    /** Primary shipment. */
+    primaryShipment?: PrimaryShipment;
+    /** Primary parcel id. */
+    primaryParcelId?: string;
+    /** Return shipment id. */
+    returnShipmentId?: string;
+    /** Return parcel id. */
+    returnParcelId?: string;
+    /** Redirect shipment id. */
+    redirectShipmentId?: string;
+    /** Redirect parcel id. */
+    redirectParcelId?: string;
+    /** Initial shipment id. */
+    initialShipmentId?: string;
+    /** Initial parcel id. */
+    initialParcelId?: string;
+    /** Response error */
+    error?: Error;
+};
+export type PrintRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Output format */
+    format?: ("pdf" | "zpl");
+    /** Print paper size Constraints: Validated for allowed format. For example zpl is allowed with A6 only. */
+    paperSize: ("A4" | "A6" | "A4_4xA6");
+    /** Parcels to print Constraints: Validated for allowed access. */
+    parcels: (number)[];
+    /** Printer name to be used for direct printing. */
+    printerName?: string;
+    /** Dpi used for rendering. Makes sense for zpl format, otherwise ignored */
+    dpi?: ("dpi203" | "dpi300");
+    /** Defines whether and how to print additional waybill copy for sender. Constraints: A4 pdf printing is required if print mode is different than NONE. */
+    additionalWaybillSenderCopy?: ("NONE" | "ON_SAME_PAGE" | "ON_SINGLE_PAGE");
+};
+export type ExtendedPrintResponse = {
+    /** Response data - base64 encoded binary data (pdf) */
+    data?: (((((((((((((byte)[])[])[])[])[])[])[])[])[])[])[])[])[];
+    /** Print labels info */
+    printLabelsInfo?: (LabelInfo)[];
+    /** Response error */
+    error?: Error;
+};
+export type LabelInfoRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string; language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Parcels to get label info for Constraints: Validated for allowed access. */
+    parcels: (ShipmentParcelRef)[];
+};
+export type LabelInfoResponse = {
+    /** Print labels info */
+    printLabelsInfo?: (LabelInfo)[];
+    /** Response error */
+    error?: Error;
+};
+export type PrintVoucherRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment ids Constraints: Validated for allowed access. All shipments must have voucher request */
+    shipmentIds: (string)[];
+    /** Printer name to be used for direct printing. Includes javascript in pdf to print document directly to the provided printer on document opening. */
+    printerName?: string;
+    /** Output format */
+    format?: ("pdf" | "zpl");
+    /** Dpi used for rendering. Makes sense for zpl format, otherwise ignored */
+    dpi?: ("dpi203" | "dpi300");
+};
+export type TrackRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Parcels to track Constraints: Allowed are up to 10 parcels */
+    parcels: (TrackShipmentParcelRef)[];
+    /** Flag to return last operation only’ */
+    lastOperationOnly?: boolean;
+};
+export type TrackResponse = {
+    /** Parcel track information */
+    parcels: (TrackedParcel)[];
+    /** Response error */
+    error?: Error;
+};
+export type BulkTrackingDataFilesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** The greatest data file id processed in client system. To get all published data files during last 10 days use 0 as lastProcessedFileId Constraints: The last processed file id must refer to a file published during last 10 days. Otherwise, error is returned. */
+    lastProcessedFileId: number;
+};
+export type BulkTrackingDataFilesResponse = {
+    /** Bulk tracking data files ordered by file id in ascending order. The greatest file id returned in this response is expected to be passed in next request for incremental processing */
+    files: (BulkTrackingDataFile)[];
+    /** Response error */
+    error?: Error;
+};
+export type PickupRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Pickup datetime. If not provided, it is assumed now. Seconds and milliseconds are ignored. */
+    pickupDateTime?: string;
+    /** To find first available date for pickup starting from pickupDate according to pickup schedule for services */
+    autoAdjustPickupDate?: boolean;
+    /** Scope of shipments to order. Constraints: ALL_CREATED_BY_SAME_CONTRACT_USERS can be used in case a logged user have the access rights to access shipments created by other users in the same contract. */
+    pickupScope?: ("EXPLICIT_SHIPMENT_ID_LIST" | "ALL_CREATED_BY_LOGGED_USER" | "ALL_CREATED_BY_SAME_CLIENT"); explicitShipmentIdList?: (string)[];
+    /** The last possible time when the address could be visited on the pickup date. */
+    visitEndTime?: string;
+    /** Contact name. */
+    contactName?: string;
+    /** Customer’s phone number. */
+    phoneNumber?: ShipmentPhoneNumber;
+};
+export type PickupResponse = {
+    /** Pickup orders created */
+    orders: (PickupOrder)[];
+    /** Response error */
+    error?: Error;
+};
+export type PickupTermsRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Service Id */
+    serviceId: number;
+    /** The first date when the shipment will be ready for pickup. If not provided, it is assumed today. Constraints: Should not be a date before today */
+    startingDate?: string;
+    /** Client and location for pickup. */
+    sender?: CalculationSender;
+    /** Flag to indicate, whether sender should pay at least one of courier service, declared value or packings.If this parameter is missing assumed value is - false. */
+    senderHasPayment?: boolean;
+};
+export type PickupTermsResponse = {
+    /** Pickup cutoffs for next days. Pickup is not allowed for missing days in the result list */
+    cutoffs: (((((((((((((((((string)[])[])[])[])[])[])[])[])[])[])[])[])[])[])[])[])[];
+    /** Response error */
+    error?: Error;
+};
+export type GetCountryRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetCountryResponse = {
+    /** Found country or null if not found */
+    country?: Country;
+    /** Response error */
+    error?: Error;
+};
+export type FindCountryRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Country search term. Filters the results by country name prefix or part of country name */
+    name?: string;
+    /** Country iso alpha 2. Filters result by exact match if presents. ISO alpha 2 value uniquely identifies country and other criterias are not needed if this one presents */
+    isoAlpha2?: string;
+    /** Country iso alpha 3. Filters result by exact match if presents. ISO alpha 3 value uniquely identifies country and other criterias are not needed if this one presents */
+    isoAlpha3?: string;
+};
+export type FindCountryResponse = {
+    /** Array of countries */
+    countries?: (Country)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllCountriesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetStateRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetStateResponse = {
+    /** State found or null if not found */
+    state?: State;
+    /** Response error */
+    error?: Error;
+};
+export type FindStateRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Country id */
+    countryId: number;
+    /** Search term for state name. Filters the results by state name prefix or part of state name. */
+    name?: string;
+};
+export type FindStateResponse = {
+    /** Array of states */
+    states?: (State)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllStatesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetSiteRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetSiteResponse = {
+    /** Found site or null if not found */
+    site?: Site;
+    /** Response error */
+    error?: Error;
+};
+export type FindSiteRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Country id */
+    countryId: number;
+    /** Search term for site name. Filters the results by site name prefix or part of site name. */
+    name?: string;
+    /** Filter results by postcode - valid postcode for site */
+    postCode?: string;
+    /** Filter results by site type (exact match) */
+    type?: string;
+    /** Filter by municipality (prefix match) */
+    municipality?: string;
+    /** Filter by region (prefix match) */
+    region?: string;
+};
+export type FindSiteResponse = {
+    /** Array of sites */
+    sites?: (Site)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllSitesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetStreetRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetStreetResponse = {
+    /** Found street or null if not found */
+    street?: Street;
+    /** Response error */
+    error?: Error;
+};
+export type FindStreetRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Site id */
+    siteId: number;
+    /** Search term for street name. Filters the results by street name prefix or part of street name. */
+    name?: string;
+    /** Filter results by street type (exact match) */
+    type?: string;
+};
+export type FindStreetResponse = {
+    /** Array of streets */
+    streets?: (Street)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllStreetsRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetComplexRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetComplexResponse = {
+    /** Complex found or null if not found */
+    complex?: Complex;
+    /** Response error */
+    error?: Error;
+};
+export type FindComplexRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Site id */
+    siteId: number;
+    /** Search term for complex name. Filters the results by complex name prefix or part of complex name. */
+    name?: string;
+    /** Filter results by complex type (exact match) */
+    type?: string;
+};
+export type FindComplexResponse = {
+    /** Array of complexes */
+    complexes?: (Complex)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllComplexesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type FindBlockRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Site id */
+    siteId: number;
+    /** Search term for block name. Filters the results by block name prefix or part of block name. */
+    name?: string;
+};
+export type FindBlockResponse = {
+    /** Array of blocks */
+    blocks?: (Block)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllBlockRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetPOIRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetPOIResponse = {
+    /** POI found or null if not found */
+    poi?: number;
+    /** Response error */
+    error?: Error;
+};
+export type FindPOIRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Site id */
+    siteId: number;
+    /** Search term for POI name. Filters the results by POI name prefix or part of POI name. */
+    name?: string;
+};
+export type FindPOIResponse = {
+    /** Array of points of interest */
+    pois?: (number)[];
+    /** Response error */
+    error?: Error;
+};
+export type GetAllPOIRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetAllPostcodesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetOfficeRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetOfficeResponse = {
+    /** Office found or null if not found */
+    office?: Office;
+    /** Response error */
+    error?: Error;
+};
+export type FindOfficeRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Country id ISO. Limits the search scope in the set of offices for specified country. System default country is used if country id is omitted. If -1 is specified - offices in all countires are searched */
+    countryId?: number;
+    /** Site id. Limits the search scope in the set of offices for specified site. If omitted - all country offices are searched */
+    siteId?: number;
+    /** Filters the results by office site name prefix or part of it. */
+    siteName?: string;
+    /** Search term for office name. Filters the results by office name prefix or part of site name. */
+    name?: string;
+    /** The number of records to return in response. All records are returned if this parameter is ommited */
+    limit?: number;
+};
+export type FindOfficeResponse = {
+    /** Array of offices */
+    offices?: (Office)[];
+    /** Response error */
+    error?: Error;
+};
+export type FindNearestOfficesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Address to which the nearest offices are searched Constraints: Only country id is mandatory */
+    address: ShipmentAddress;
+    /** Maximum office distance ( in meters ) from provided address */
+    distance?: number;
+    /** The number of records to return in response. */
+    limit?: number;
+    /** Filter offices by type. */
+    officeType?: ("OFFICE" | "APT");
+    /** Supported office features */
+    officeFeatures?: ("CARD_PAYMENT" | "CASH_PAYMENT" | "DROP_OFF" | "PICK_UP" | "CARGO_TYPE_PARCEL" | "CARGO_TYPE_PALLET" | "CARGO_TYPE_TYRE");
+};
+export type FindNearestOfficesResponse = {
+    /** Array of offices */
+    offices?: (OfficeResult)[];
+    /** Provided address X coord */
+    x?: number;
+    /** Provided address Y coord */
+    y?: number;
+    /** Response error */
+    error?: Error;
+};
+export type CalculationRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Defines the pickup place. If not specified, the logged user location is considered as a sender location. */
+    sender?: CalculationSender;
+    /** Defines the recipient delivery place. */
+    recipient: CalculationRecipient;
+    /** Defines service agreemen */
+    service: CalculationService;
+    /** Defines content - parcels, weight and etc */
+    content: CalculationContent;
+    /** Defines who-pays-what in shipment */
+    payment: ShipmentPayment;
+};
+export type CalculationResponse = {
+    /** Calculations for all service ids in request */
+    calculations: ((CalculationResult)[])[];
+    /** Response error */
+    error?: Error;
+};
+export type GetClientRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetClientResponse = {
+    /** Client data */
+    client?: Client;
+    /** Response error */
+    error?: Error;
+};
+export type GetContractClientsRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetContractClientsResponse = {
+    /** Clients with same contract as logged users's one, if any */
+    clients?: (Client)[];
+    /** Response error */
+    error?: Error;
+};
+export type CreateContactRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** External contact id (caller client Id unique reference) Constraints: Max 36 characters. Unique for caller */
+    externalContactId: string;
+    /** External contact secret key Constraints: Max 36 characters */
+    secretKey?: string;
+    /** Contact phone number (for example: +40799123456, 0040799123456, +359999123456 - international format numbers or 0799123456, 0999123456 - local numbers). Constraints: Max size is 20 chars. Phone numbers must contain digits only. The "+" sign is also permitted as a leading symbol. Only spaces are allowed as separators. Only phone numbers starting with "0" (zero) or "+" sign are allowed. */
+    phone1: ShipmentPhoneNumber;
+    /** Contact phone number 2. Constraints: Validate for valid phone number, if presents. */
+    phone2?: ShipmentPhoneNumber;
+    /** Contact customer name. Constraints: Validate for valid name (minimum 3 symbols, maximum 60). */
+    clientName: string;
+    /** Contact customer object name. Constraints: Validate for valid name (maximum 60 symbols). */
+    objectName?: string;
+    /** Contact name of contact Constraints: Maximum 60 */
+    contactName?: string;
+    /** Contact email. Constraints: Maximum  255 */
+    email?: string;
+    /** Private person flag. */
+    privatePerson: boolean;
+    /** Contact address. Constraints: Validated for valid values. */
+    address: ShipmentAddress;
+};
+export type CreateContactResponse = {
+    /** Client Id associated for created contact in the system */
+    clientId?: number;
+    /** Response error */
+    error?: Error;
+};
+export type GetContactByExternalIdRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Secret key Constraints: Max 36 characters */
+    secretKey?: string;
+};
+export type GetContactByExternalIdResponse = {
+    /** Client data */
+    client?: Client;
+    /** Response error */
+    error?: Error;
+};
+export type GetOwnClientIdRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type GetOwnClientIdResponse = {
+    /** Own client id */
+    clientId: number;
+    /** Response error */
+    error?: Error;
+};
+export type ContractInfoRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+};
+export type ContractInfoResponse = {
+    /** Contract id */
+    id: number;
+    /** Special delivery requirements */
+    specialDeliveryRequirements?: SpecialDeliveryRequirements;
+    /** COD contract info */
+    cod?: CODAdditionalServiceContractInfo;
+    /** Administrative fee allowed */
+    administrativeFeeAllowed: boolean;
+    /** Response error */
+    error?: Error;
+};
+export type ValidateAddressRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Shipment address to validate */
+    address?: ShipmentAddress;
+};
+export type ValidationResponse = 282ValidationResponse & {
+};
+
+export type ValidatePostCodeRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Country id */
+    countryId?: number;
+    /** Site id */
+    siteId?: number;
+    /** Postcode to validate */
+    postCode: string;
+};
+export type ValidatePhoneRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Phone number */
+    number: string;
+    /** Phone number extension */
+    ext?: string;
+};
+export type ValidateShipmentRequest = CreateShipmentRequest & {
+};
+export type ValidateShipmentResponse = 282ValidationResponse & {
+};
+
+export type ServicesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Date. Current date is assumed if not provided */
+    date?: string;
+};
+export type ServicesResponse = {
+    /** Available courier services */
+    services: (CourierService)[];
+    /** Response error */
+    error?: Error;
+};
+export type DestinationServicesRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Date. Current date is assumed if not provided */
+    date?: string;
+    /** Defines the pickup place. If not specified, the logged user client location is considered as a sender location. */
+    sender?: CalculationSender;
+    /** Defines the recipient delivery place. */
+    recipient: CalculationRecipient;
+};
+export type DestinationServicesResponse = {
+    /** Available courier services for destination */
+    services: (ExtendedCourierService)[];
+    /** Response error */
+    error?: Error;
+};
+export type PayoutRequest = {
+    /** User name */
+    userName: string;
+    /** Password */
+    password: string;
+    /** Language ("EN", "BG"). Default is the default system language (BG). */
+    language?: string;
+    /** Client system id Constraints: Validated against system register for external customers. */
+    clientSystemId?: number;
+    /** Start of period date time. */
+    fromDate: string;
+    /** End of period date time. */
+    toDate: string;
+    /** Include payout details flag */
+    includeDetails?: boolean;
+};
+export type PayoutResponse = {
+    /** Shipment payouts for a period */
+    payouts: (Payout)[];
+    /** Response error */
+    error?: Error;
 };
