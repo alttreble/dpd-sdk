@@ -1,0 +1,178 @@
+<h1 id="href-description">2. Overall Description</h1>
+BASE_URL=https://api.speedy.bg/v1
+
+<h3 id="href-shipment-service">2.1. Shipment Service</h3>
+<span class="spanWebService">Web service URL:</span> BASE_URL/shipment
+
+<h3 id="href-create-shipment-req">2.1.1.1. Create Shipment Request (CreateShipmentRequest)</h3>
+<span class="spanMethod">Method:</span> POST<br>
+<span class="spanContentType">Content-type:</span> application/json; <span class="spanCharset">charset</span>=utf-8<br>
+Input parameters:
+<table class="tableDataStructure5">
+   <tbody>
+      <tr class="trTableHeader">
+         <td colspan="5">CreateShipmentRequest</td>
+      </tr>
+      <tr class="trTableColumnNames">
+         <td>Name</td>
+         <td>Type</td>
+         <td>Required</td>
+         <td>Data</td>
+         <td>Constraints</td>
+      </tr>
+      <tr>
+         <td>userName</td>
+         <td>String</td>
+         <td>Yes</td>
+         <td>User name</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>password</td>
+         <td>String</td>
+         <td>Yes</td>
+         <td>Password</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>language</td>
+         <td>String</td>
+         <td>No</td>
+         <td>Language ("EN", "BG"). Default is the default system language (BG).</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>clientSystemId</td>
+         <td>Long</td>
+         <td>No</td>
+         <td>Client system id</td>
+         <td>Validated against system register for external customers.</td>
+      </tr>
+   <tr>
+         <td>id</td>
+      <td>String</td>
+      <td>No</td>
+      <td>Shipment id</td>
+      <td>Shipment ID from provided range. If shipment ID is empty the system will generate and return it in response</td>
+  </tr>
+      <tr>
+         <td>sender</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-sender">ShipmentSender</a></td>
+         <td>No</td>
+         <td>Defines the sender of the shipment and shipment's pickup place. If not specified, the logged user is considered as a sender.</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>recipient</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-recipient">ShipmentRecipient</a></td>
+         <td>Yes</td>
+         <td>Defines the recipient of the shipment and shipment’s delivery place.</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>service</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-service">ShipmentService</a></td>
+         <td>Yes</td>
+         <td>Defines shipment service level agreement. </td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>content</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-content">ShipmentContent</a></td>
+         <td>Yes</td>
+         <td>Defines shipment’s content - number of parcels, weight, size, etc.</td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>payment</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-payment">ShipmentPayment</a></td>
+         <td>Yes</td>
+         <td>Defines who-pays-what in shipment and other payment parameters. </td>
+         <td></td>
+      </tr>
+      <tr>
+         <td>shipmentNote</td>
+         <td>String</td>
+         <td>No</td>
+         <td>Customer’s note associated with the shipment.</td>
+         <td>200 characters</td>
+      </tr>
+      <tr>
+         <td>ref1</td>
+         <td>String</td>
+         <td>No</td>
+         <td>Reference number or text.</td>
+         <td>30</td>
+      </tr>
+      <tr>
+         <td>ref2</td>
+         <td>String</td>
+         <td>No</td>
+         <td>Reference number or text.</td>
+         <td>30</td>
+      </tr>
+      <tr>
+          <td>consolidationRef</td>
+          <td>String</td>
+          <td>No</td>
+          <td>Consolidation reference number or text.</td>
+          <td>30</td>
+      </tr>
+      <tr>
+          <td>requireUnsuccessfulDeliveryStickerImage</td>
+          <td>Boolean</td>
+          <td>No</td>
+          <td>Require unsuccessful delivery sticker image flag.</td>
+          <td></td>
+      </tr>
+   </tbody>
+</table>
+<a href="https://services.speedy.bg/api/#CreateShipmentRequest" class="aExamples" target="_blank">View request examples</a>
+<h3 id="href-create-shipment-resp">2.1.1.2. Create Shipment Response (CreateShipmentResponse)</h3>
+Output parameters:
+<table class="tableDataStructure3">
+   <tbody>
+      <tr class="trTableHeader">
+         <td colspan="5">CreateShipmentResponse</td>
+      </tr>
+      <tr class="trTableColumnNames">
+         <td>Name</td>
+         <td>Type</td>
+         <td>Data</td>
+      </tr>
+      <tr>
+         <td>id</td>
+         <td>String</td>
+         <td>Generated shipment id.</td>
+      </tr>
+      <tr>
+         <td>parcels</td>
+         <td><a class="aInternalLink" href="#href-ds-created-shipment-parcel">CreatedShipmentParcel</a>[]
+            </td>
+         <td>Generated parcels.</td>
+      </tr>
+      <tr>
+         <td>price</td>
+         <td><a class="aInternalLink" href="#href-ds-shipment-price">ShipmentPrice</a></td>
+         <td>Returned, if customer has access to view the amounts of the shipment. </td>
+      </tr>
+      <tr>
+         <td>pickupDate</td>
+         <td>Date (date)</td>
+         <td>Shipment pickup date.</td>
+      </tr>
+      <tr>
+         <td>deliveryDeadline</td>
+         <td>Date (datetime)</td>
+         <td>Deadline for delivery. Returned, if available.</td>
+      </tr>
+      <tr>
+         <td>error</td>
+         <td><a class="aInternalLink" href="#href-ds-errors">Error</a></td>
+         <td>Response error.</td>
+      </tr>
+   </tbody>
+</table>
+
+
+<h3 id="href-cancel-shipment-req">2.1.2.1. Cancel Shipment Request (CancelShipmentRequest)</h3>
