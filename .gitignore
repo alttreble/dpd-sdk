@@ -6,6 +6,9 @@ out
 dist
 *.tgz
 
+# assembled docs site (built by `bun run docs:build`)
+_site
+
 # code coverage
 coverage
 *.lcov

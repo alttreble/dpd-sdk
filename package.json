@@ -1,10 +1,12 @@
 {
-  "name": "pdp-js",
-  "module": "index.ts",
+  "name": "dpd-sdk",
   "type": "module",
   "private": true,
   "scripts": {
-    "generate": "bun ./gen/generate.ts"
+    "generate": "bun ./gen/release.ts",
+    "generate:offline": "bun ./gen/release.ts --offline",
+    "docs:build": "rm -rf _site && mkdir -p _site && cp docs/index.html _site/index.html && cp openapi.yaml _site/openapi.yaml",
+    "docs:preview": "bun run docs:build && bunx serve _site"
   },
   "devDependencies": {
     "@types/bun": "latest",

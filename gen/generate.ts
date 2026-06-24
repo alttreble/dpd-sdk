@@ -9,7 +9,7 @@ export interface DocsProvider {
   getDocs(): string | Promise<string>;
 }
 
-class FetchDocsProvider implements DocsProvider {
+export class FetchDocsProvider implements DocsProvider {
   constructor(
     private readonly url: string = "https://api.speedy.bg/api/docs/",
     private readonly normalizer = new DocsNormalizer(),
@@ -20,6 +20,19 @@ class FetchDocsProvider implements DocsProvider {
     const text = await res.text()
 
     return this.normalizer.normalize(text);
+  }
+}
+
+/** Reads the documentation from a local HTML file (useful for deterministic, offline generation). */
+export class FileDocsProvider implements DocsProvider {
+  constructor(
+    private readonly filePath: string,
+    private readonly normalizer = new DocsNormalizer(),
+  ) { }
+
+  async getDocs(): Promise<string> {
+    const raw = await Bun.file(this.filePath).text();
+    return this.normalizer.normalize(raw);
   }
 }
 
@@ -253,10 +266,10 @@ export class APIGenerator {
   /**
    * Generates an OpenAPI 3.1 schema (YAML) from the API documentation.
    */
-  async generate(outPath = "./openapi.yaml") {
-    const doc = this.buildOpenApiDocument();
+  async generate(outPath = "./openapi.yaml", version = "0.0.0") {
+    const doc = this.buildOpenApiDocument(version);
     await Bun.write(outPath, stringifyYaml(doc));
-    this.logger.info(`Wrote OpenAPI schema to ${outPath}`);
+    this.logger.info(`Wrote OpenAPI schema (version ${version}) to ${outPath}`);
     return doc;
   }
 
@@ -264,8 +277,10 @@ export class APIGenerator {
    * Builds the in-memory OpenAPI 3.1 document from the documentation:
    * services + their methods become `paths`, and all data/request/response
    * structures become `components.schemas`.
+   *
+   * @param version Value for `info.version` (derived from the changelog feed date).
    */
-  buildOpenApiDocument(): OpenAPIV3_1.Document {
+  buildOpenApiDocument(version = "0.0.0"): OpenAPIV3_1.Document {
     const services = this.extractServices();
     const schemas: SchemaMap = {
       ...this.extractDataStructuresSchemas(),
@@ -317,7 +332,7 @@ export class APIGenerator {
 
     return {
       openapi: "3.1.0",
-      info: { title: "Speedy Web API", version: "1.0.0" },
+      info: { title: "Speedy Web API", version },
       servers: [{ url: this.extractBaseUrl() ?? "https://api.speedy.bg/v1" }],
       tags: services.map((s) => ({ name: s.name })),
       paths,
@@ -768,6 +783,11 @@ export class APIGenerator {
 }
 
 if (import.meta.main) {
-  const generator = await new APIGenerator().init();
-  await generator.generate();
+  // Usage:
+  //   bun ./gen/generate.ts                              fetch live docs -> ./openapi.yaml
+  //   bun ./gen/generate.ts <input.html> [output.yaml]   build from a local HTML file
+  const [inputArg, outArg] = process.argv.slice(2);
+  const provider = inputArg ? new FileDocsProvider(inputArg) : new FetchDocsProvider();
+  const generator = await new APIGenerator(provider).init();
+  await generator.generate(outArg ?? "./openapi.yaml");
 }

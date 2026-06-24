@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Speedy Web API
-  version: 0.0.0
+  version: 2026-05-12
 servers:
   - url: https://api.speedy.bg/v1
 tags:

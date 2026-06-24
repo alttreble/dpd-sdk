@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+
+<channel>
+  <title>Speedy REST API feed</title>
+  <link>https://services.speedy.bg/api/feed/</link>
+  <description>Speedy REST API news and features</description>
+  <author>Speedy JSCo.</author>
+  <lastBuildDate>2025-03-05</lastBuildDate>
+  <item>
+    <pubDate>2025-03-11</pubDate>
+    <title>Additional explanation of some errors was introduced in the "Speedy REST API examples" page.</title>
+    <description>Additional explanation of some errors was introduced in the "Speedy REST API examples" page.</description>
+	<link>https://services.speedy.bg/api/#errorsExplanation</link>
+  </item>
+  <item>
+    <pubDate>2025-06-03</pubDate>
+    <title>A new property "goods" and a new structure "GoodsItem".</title>
+    <description>A new property "goods" and a structure "GoodsItem" were added in the "parcel" section of the "Create Shipment" request. They should be used for parcels due to customs control. For more information, contact your company representative.</description>
+	<link>https://api.speedy.bg/api/docs/#href-ds-shipment-content-parcel</link>
+  </item>
+  <item>
+    <pubDate>2025-10-20</pubDate>
+    <title>Added new properties</title>
+    <description><![CDATA[
+		<ul>
+			<li>A new property "valueType" was introduced in the "<a href="https://api.speedy.bg/api/docs/#href-ds-parcel-to-print-additional-barcode">ParcelToPrintAdditionalBarcode</a>" structure.</li>
+			<li>A new property "printAdditionalBarcode" was introduced in the "<a href="https://api.speedy.bg/api/docs/#href-ds-shipment-content">ShipmentContent</a>" structure.</li>
+			<li>A new property "printAdditionalBarcode" was introduced in the "<a href="https://api.speedy.bg/api/docs/#href-ds-shipment-content-parcel">ShipmentParcel</a>" structure.</li>
+		</ul>	
+	]]></description>
+  </item>
+  <item>
+    <pubDate>2025-10-23</pubDate>
+    <title>Added new exception codes</title>
+    <description>A few new used exception codes for tracking operations were added in the documentation:<![CDATA[
+		<ul>
+			<li>1018 Sender drop-off in office</li>
+			<li>1019 Sender not present</li>
+			<li>9014 Closed national roads</li>
+			<li>9015 Delay at border crossing</li>
+			<li>9016 Severe weather conditions</li>
+			<li>9017 Traffic accident</li>
+		</ul>	
+	]]></description>
+	<link>https://api.speedy.bg/api/docs/#href-appendix2-track-and-trace-operation-excodes</link>
+  </item>
+  <item>
+    <pubDate>2025-10-28</pubDate>
+    <title>The description of operation code 1134 was changed.</title>
+    <description>The description of the operation code 1134 was changed from "Office/Locker ready for pickup message sent" to "Notification sent for parcel in office/locker".</description>
+	<link>https://services.speedy.bg/api/docs/#href-appendix1-track-and-trace-codes</link>
+  </item>
+  <item>
+    <pubDate>2025-12-10</pubDate>
+    <title>Added new operation and modified the exception codes description.</title>
+    <description><![CDATA[
+		<ul>
+			<li>A new operation 136 - "Clarify shipment delivery was" added. Read more: <a href="https://api.speedy.bg/api/docs/#href-appendix1-track-and-trace-codes">Track And Trace Operation Codes</a>.</li>
+			<li>The table with the exception codes was modified with a description of which operation codes appear for some operation types. Read more: <a href="https://api.speedy.bg/api/docs/#href-appendix2-track-and-trace-operation-excodes">Exception Codes for Track and Trace Operations</a>.</li>
+		</ul>	
+	]]></description>
+  </item>
+  <item>
+    <pubDate>2026-05-08</pubDate>
+    <title>Added new structures "RoutingInformation" and "Tour".</title>
+    <description><![CDATA[
+		<ul>
+			<li>A new structure named <a href="https://api.speedy.bg/api/docs/#href-routing-information">"RoutingInformation"</a> was added in the "Office" structure.</li>
+			<li>A new structure named <a href="https://api.speedy.bg/api/docs/#href-routing-information-tour">"Tour"</a> was added in the "RoutingInformation" structure.</li>
+		</ul>
+	]]></description>
+  </item>
+  <item>
+    <pubDate>2026-05-12</pubDate>
+    <title>Deprecated "printAdditionalBarcode" property.</title>
+    <description>The "printAdditionalBarcode" property in the "Shipment Content" structure was deprecated.</description>
+	<link>https://services.speedy.bg/api/docs/#href-ds-shipment-content</link>
+  </item>
+
+</channel>
+
+</rss>
